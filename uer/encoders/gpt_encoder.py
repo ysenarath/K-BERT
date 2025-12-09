@@ -1,23 +1,30 @@
 # -*- encoding:utf-8 -*-
+from dataclasses import dataclass
 import torch
 import torch.nn as nn
-from uer.layers.layer_norm import LayerNorm
-from uer.layers.position_ffn import PositionwiseFeedForward
-from uer.layers.multi_headed_attn import MultiHeadedAttention
-from uer.layers.transformer import TransformerLayer
+from uer.layers.transformer import TransformerLayer, TransformerLayerConfig
 
 
-class GptEncoder(nn.Module):
+@dataclass
+class GPTEncoderConfig(TransformerLayerConfig):
+    layers_num: int = 12
+
+
+class GPTEncoder(nn.Module):
     """
     BERT encoder exploits 12 or 24 transformer layers to extract features.
     """
-    def __init__(self, args):
-        super(GptEncoder, self).__init__()
-        self.layers_num = args.layers_num
-        self.transformer = nn.ModuleList([
-            TransformerLayer(args) for _ in range(self.layers_num)
-        ])
-        
+
+    def __init__(self, config: GPTEncoderConfig):
+        super(GPTEncoder, self).__init__()
+        self.transformer = nn.ModuleList(
+            [TransformerLayer(config) for _ in range(self.layers_num)]
+        )
+
+    @property
+    def layers_num(self):
+        return len(self.transformer)
+
     def forward(self, emb, seg):
         """
         Args:

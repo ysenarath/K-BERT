@@ -13,4 +13,4 @@ class LayerNorm(nn.Module):
     def forward(self, x):
         mean = x.mean(-1, keepdim=True)
         std = x.std(-1, keepdim=True)
-        return self.gamma * (x-mean) / (std+self.eps) + self.beta
+        return self.gamma * (x - mean) / (std + self.eps) + self.beta
