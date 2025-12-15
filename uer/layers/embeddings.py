@@ -1,7 +1,17 @@
 # -*- encoding:utf-8 -*-
+from dataclasses import dataclass
+from typing import Optional
+
 import torch
 import torch.nn as nn
+
 from uer.layers.layer_norm import LayerNorm
+
+
+@dataclass
+class BERTEmbeddingConfig:
+    emb_size: int = 768
+    dropout: float = 0.1
 
 
 class BERTEmbedding(nn.Module):
@@ -10,16 +20,18 @@ class BERTEmbedding(nn.Module):
     word embedding, position embedding, and segment embedding.
     """
 
-    def __init__(self, args, vocab_size):
+    def __init__(self, config: BERTEmbeddingConfig, vocab_size: int):
         super(BERTEmbedding, self).__init__()
-        self.dropout = nn.Dropout(args.dropout)
+        self.dropout = nn.Dropout(config.dropout)
         self.max_length = 512
-        self.word_embedding = nn.Embedding(vocab_size, args.emb_size)
-        self.position_embedding = nn.Embedding(self.max_length, args.emb_size)
-        self.segment_embedding = nn.Embedding(3, args.emb_size)
-        self.layer_norm = LayerNorm(args.emb_size)
+        self.word_embedding = nn.Embedding(vocab_size, config.emb_size)
+        self.position_embedding = nn.Embedding(self.max_length, config.emb_size)
+        self.segment_embedding = nn.Embedding(3, config.emb_size)
+        self.layer_norm = LayerNorm(config.emb_size)
 
-    def forward(self, src, seg, pos=None):
+    def forward(
+        self, src: torch.Tensor, seg: torch.Tensor, pos: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         word_emb = self.word_embedding(src)
         if pos is None:
             pos_emb = self.position_embedding(
